@@ -22,13 +22,17 @@
         justify-self: flex-end;
         display:flex;
         justify-content: space-around;
+        div:first-child{
+            padding: 4px;
+        }
         .login{
             padding-right: 3px;
-            border-right: 1.5px rgb(151, 151, 151)solid ;
 
         }
         .register{
             padding-left: 3px;
+            background-color: rgb(0, 0, 0);
+            color:white;
         }
 
     }

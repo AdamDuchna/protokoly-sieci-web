@@ -1,4 +1,4 @@
-.user-loginForm {
+.post-creationForm {
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
@@ -11,20 +11,7 @@
   min-height: calc(100vh - 35px);
 }
 
-.user-loginForm .login-box {
-  -webkit-box-pack: justify;
-      -ms-flex-pack: justify;
-          justify-content: space-between;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  font-size: 10px;
-}
-
-.user-loginForm form {
+.post-creationForm form {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -32,21 +19,37 @@
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
           flex-direction: column;
-  width: 160px;
+  width: 400px;
 }
 
-.user-loginForm form * {
+.post-creationForm form * {
   margin-bottom: 4px;
 }
 
-.user-loginForm form input {
+.post-creationForm form input {
   background-color: white;
   border: none;
 }
 
-.user-loginForm form button {
+.post-creationForm form textarea {
+  height: 200px;
+  background-color: white;
+  border: none;
+}
+
+.post-creationForm form button {
   border: none;
   color: white;
   background-color: black;
+  margin-right: 6px;
 }
-/*# sourceMappingURL=UserLoginForm.css.map */
+
+.post-creationForm form .submit-box {
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+/*# sourceMappingURL=PostCreationForm.css.map */

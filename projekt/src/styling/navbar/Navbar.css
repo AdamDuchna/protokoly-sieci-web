@@ -40,12 +40,17 @@
       justify-content: space-around;
 }
 
+.navbar .login-register-box div:first-child {
+  padding: 4px;
+}
+
 .navbar .login-register-box .login {
   padding-right: 3px;
-  border-right: 1.5px #979797 solid;
 }
 
 .navbar .login-register-box .register {
   padding-left: 3px;
+  background-color: black;
+  color: white;
 }
 /*# sourceMappingURL=Navbar.css.map */

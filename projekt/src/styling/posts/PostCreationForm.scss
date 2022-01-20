@@ -1,19 +1,18 @@
-.user-loginForm{
-
-    .login-box{
-        justify-content: space-between;
-        align-items: center;
-        display: flex;
-        font-size: 10px;
-    }
+.post-creationForm{
+    
     form{
         display:flex;
         flex-direction: column;
-        width: 160px;
+        width: 400px;
         *{
             margin-bottom: 4px;
         }
         input{
+            background-color: white;
+            border: none;
+        }
+        textarea{
+            height: 200px;
             background-color: white;
             border: none;
         }
@@ -22,6 +21,11 @@
             border: none;
             color:white;
             background-color: black;
+            margin-right: 6px;
+        }
+        .submit-box{
+            align-items: center;
+            display: flex;
         }
     }
     justify-content: center;

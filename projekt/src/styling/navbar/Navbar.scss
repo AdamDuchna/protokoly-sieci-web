@@ -1,0 +1,35 @@
+.navbar{
+    background-color: white;
+    padding: 6px;
+    padding-right: 20px;
+    padding-left: 20px;
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px;
+    .logo{
+        display:flex;
+        justify-self: flex-end;
+        font-weight: bolder;
+        color:black;
+        font-size: larger;
+    }
+    div{
+        color:rgb(151, 151, 151);
+        font-size: small;
+    }
+    .login-register-box{
+        justify-self: flex-end;
+        display:flex;
+        justify-content: space-around;
+        .login{
+            padding-right: 3px;
+            border-right: 1.5px rgb(151, 151, 151)solid ;
+
+        }
+        .register{
+            padding-left: 3px;
+        }
+
+    }
+}

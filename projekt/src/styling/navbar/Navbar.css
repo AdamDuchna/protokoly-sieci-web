@@ -1,0 +1,51 @@
+.navbar {
+  background-color: white;
+  padding: 6px;
+  padding-right: 20px;
+  padding-left: 20px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px;
+          box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px;
+}
+
+.navbar .logo {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  justify-self: flex-end;
+  font-weight: bolder;
+  color: black;
+  font-size: larger;
+}
+
+.navbar div {
+  color: #979797;
+  font-size: small;
+}
+
+.navbar .login-register-box {
+  justify-self: flex-end;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-pack: distribute;
+      justify-content: space-around;
+}
+
+.navbar .login-register-box .login {
+  padding-right: 3px;
+  border-right: 1.5px #979797 solid;
+}
+
+.navbar .login-register-box .register {
+  padding-left: 3px;
+}
+/*# sourceMappingURL=Navbar.css.map */

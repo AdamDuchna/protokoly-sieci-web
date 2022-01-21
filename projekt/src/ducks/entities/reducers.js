@@ -36,9 +36,9 @@ const entityReducer = (entity, state = { allIds: [], byId: {} }, action) => {
         case "DEL_ONE":      
             return {byId:Object.fromEntries(Object.entries(state.byId).slice(0).filter(([k,v]) => k!==actionEntities)),allIds:state.allIds.slice(0).filter(id => id !== actionEntities)}
         case "UPDATE_ONE": 
-            return {byId:{...state.byId,actionEntities},allIds:[...state.allIds]}
+            return {byId:{...state.byId,[actionEntities._id]:actionEntities},allIds:[...state.allIds]}
         case "ADD_ONE":
-            return {byId:{...state.byId,actionEntities},allIds:[...state.allIds,Object.values(actionEntities)._id]}
+            return {byId:{...state.byId,[actionEntities._id]:actionEntities},allIds:[...state.allIds,actionEntities._id]}
         default:
             return state;
     }

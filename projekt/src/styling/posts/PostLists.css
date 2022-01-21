@@ -1,1 +1,61 @@
-/* No CSS *//*# sourceMappingURL=PostLists.css.map */
+.post-menu {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.post-menu input {
+  padding-left: 10px;
+  border: none;
+  width: 60vw;
+}
+
+.post-menu .post-add {
+  padding: 8px;
+  background-color: white;
+}
+
+.post-menu .post-add div {
+  background-color: black;
+  color: white;
+  width: 10vw;
+  text-align: center;
+}
+
+.post-menu .post-list {
+  padding: 12px;
+  margin-top: 20px;
+  background-color: white;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  width: 70vw;
+}
+
+.post-menu .post-list a {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+}
+
+.post-menu .post-list a div {
+  padding: 8px;
+}
+
+.post-menu .post-list .post:nth-of-type(2n) {
+  background-color: #dfdfdf;
+}
+/*# sourceMappingURL=PostLists.css.map */

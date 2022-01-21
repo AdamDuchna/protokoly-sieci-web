@@ -1,0 +1,17 @@
+.post-window{
+    display: flex;
+    justify-content: center;
+    .post-content{
+        padding:12px;
+        background-color: white;
+        margin-top:20px;
+        width: 70vw;
+        display: flex;
+        flex-direction: column;
+    }
+    .post-title-date{
+        margin-bottom:20px;
+        display:flex;
+        justify-content: space-between;
+    }
+}

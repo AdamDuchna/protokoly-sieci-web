@@ -14,8 +14,11 @@ const Navbar = ({login,users,getUsers,setLoginAction}) => {
     },[users])
 
     useEffect(()=>{
-        const logged = fetchLogin()
-        if(logged){setLoginAction(logged)}
+        const isEmpty = Object.keys(login).length === 0;
+        if(users && isEmpty){
+            const logged = fetchLogin()
+            if(logged){setLoginAction(logged)}
+        }
     })
 
     const fetchLogin=()=>{

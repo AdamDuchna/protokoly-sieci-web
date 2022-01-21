@@ -9,6 +9,7 @@ import Navbar from './ui/navbar/Navbar';
 import UserRegisterForm from './ui/forms/UserRegisterForm';
 import PostsList from './ui/posts/PostsList';
 import PostsForm from './ui/posts/PostsForm';
+import PostDetail from './ui/posts/PostDetail';
 function App() {
   return (
     <div className="App">
@@ -18,6 +19,7 @@ function App() {
               <Route path='/login'><UserLoginForm/></Route>
               <Route path='/register'><UserRegisterForm/></Route>
               <Route path='/posts/add'><PostsForm/></Route>
+              <Route path='/posts/:id'><PostDetail/></Route>
               <Route path='/'><PostsList/></Route>
             </Routes>
         </Router>

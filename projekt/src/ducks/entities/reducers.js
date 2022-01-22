@@ -1,6 +1,8 @@
 const allEntities = [
     "users",
-    "posts"
+    "posts",
+    "comments",
+    "likes"
 ];
 const defaultState = allEntities.reduce(
     (acc, entity) => ({

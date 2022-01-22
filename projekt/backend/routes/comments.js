@@ -9,9 +9,7 @@ router.get('/', async (req, res) => {
     if(error){
       return res.send(error)
     }
-    return res.send({
-      comments: [...commentsX]
-    })
+    return res.send([...commentsX])
   })
 });
 

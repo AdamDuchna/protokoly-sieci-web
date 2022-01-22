@@ -44,7 +44,7 @@ export const addUser = (user) => {
                  payload: async (action, state, res) => {
                      console.log(res)
                      const json = await res.json();
-                     const { entities } = normalize({'users':json}, usersSchema)
+                     const { entities } = normalize(json, userSchema)
                      return entities;
                  },
                  meta: { actionType: 'ADD_ONE' }

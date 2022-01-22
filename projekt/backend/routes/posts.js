@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
     if(error){
       return res.send(error)
     }
-    return res.send([...postsX])
+    return res.send({posts:[...postsX]})
   })
 });
 

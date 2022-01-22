@@ -6,7 +6,8 @@ const likesSchema = new Schema({
         required: true
     },
     post: {type: Schema.Types.ObjectId, ref: 'Post'},
-    users: [Schema.Types.ObjectId]
+    usersUpvotes: [Schema.Types.ObjectId],
+    usersDownvotes: [Schema.Types.ObjectId],
 
 });
 

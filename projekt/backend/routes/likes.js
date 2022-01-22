@@ -9,15 +9,12 @@ router.get('/', async (req, res) => {
     if(error){
       return res.send(error)
     }
-    return res.send({
-      comments: [...commentsX]
-    })
+    return res.send({likes:[...commentsX]})
   })
 });
 
 router.post('/', async (req, res) => {
     let newLikes = new Likes({
-        creationDate: new Date(),
         ...req.body
       })
       await newLikes.save()

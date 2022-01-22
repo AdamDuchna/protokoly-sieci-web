@@ -2,54 +2,54 @@ import { createAction } from "redux-api-middleware";
 import { schema, normalize} from 'normalizr';
 import types from "./types";
 
-const postSchema = new schema.Entity('posts');
-const postsSchema = new schema.Array(postSchema);
+const commentSchema = new schema.Entity('comments');
+const commentsSchema = new schema.Array(commentSchema);
 
-export const getPosts = () => {
+export const getComments = () => {
    return createAction({
-       endpoint: 'http://localhost:5000/posts',
+       endpoint: 'http://localhost:5000/comments',
        method: 'GET',
        headers: {
         'Content-Type': 'application/json',
        },
        types: [
-           types.POSTS_LIST_REQUEST,
+           types.COMMENTS_LIST_REQUEST,
            {
-                type: types.POSTS_LIST_SUCCESS,
+                type: types.COMMENTS_LIST_SUCCESS,
                 payload: async (action, state, res) => {
                     console.log(res)
                     const json = await res.json();
-                    const { entities } = normalize(json, postsSchema)
+                    const { entities } = normalize(json, commentSchema)
                     return entities;
                 },
                 meta: { actionType: 'GET_ALL' }
            },
-           types.POSTS_LIST_FAILURE
+           types.COMMENTS_LIST_FAILURE
        ]
    })
 }
 
-export const addPost = (posts) => {
+export const addComment = (comment) => {
     return createAction({
-        endpoint: 'http://localhost:5000/posts',
+        endpoint: 'http://localhost:5000/comments',
         method: 'POST',
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify(posts),
+        body: JSON.stringify(comment),
         types: [
-            types.POSTS_ADD_REQUEST,
+            types.COMMENTS_ADD_REQUEST,
             {
-                 type: types.POSTS_ADD_SUCCESS,
+                 type: types.COMMENTS_ADD_SUCCESS,
                  payload: async (action, state, res) => {
                      console.log(res)
                      const json = await res.json();
-                     const { entities } = normalize(json, postSchema)
+                     const { entities } = normalize(json, commentSchema)
                      return entities;
                  },
                  meta: { actionType: 'ADD_ONE' }
             },
-            types.POSTS_ADD_FAILURE
+            types.COMMENTS_ADD_FAILURE
         ]
     })
  }

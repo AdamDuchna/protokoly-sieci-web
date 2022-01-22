@@ -1,6 +1,7 @@
 .post-window{
     display: flex;
-    justify-content: center;
+    align-items: center;
+    flex-direction: column;
     .post-content{
         padding:12px;
         background-color: white;
@@ -13,5 +14,74 @@
         margin-bottom:20px;
         display:flex;
         justify-content: space-between;
+    }
+    .post-author{
+        align-self: flex-end;
+    }
+    .post-comment{
+        display: flex;
+        align-items: center;
+        margin-top:20px;
+        width: 70vw;
+        padding:12px;
+        background-color: white;
+        border-bottom: 6px black solid;
+        
+        input{
+            padding:6px;
+            border: none;
+            width: 69vw;
+            height: 100%;
+        }
+        button{
+            border: none;
+            padding:6px;
+        }
+    }
+    .post-comments{
+        display: flex;
+        flex-direction: column;
+        width: 70vw;
+        padding:12px;
+        background-color: white;
+        .comment{
+            margin:6px;
+            padding:6px;
+            border-bottom: 1px rgb(182, 182, 182) solid;
+            border-right: 1px rgb(182, 182, 182) solid;
+            .comment-message{
+                word-wrap: break-word;
+            }
+        }
+        .comment-info{
+            display: flex;
+            justify-content: space-between;
+        }
+    }
+    .post-author-vote{
+        margin-top:20px;
+        display: flex;
+        justify-content: space-between;
+        .post-vote{
+            display: flex;
+            align-items: center;
+            div{
+                font-size: x-large;
+            }
+            .login-status{
+                margin-left: 12px;
+                font-size: medium;
+            }
+        }
+    }
+    .admin-panel,.author-panel{
+        display: flex;
+        padding:12px;
+        background-color: black;
+        width: 70vw;
+        color:white;
+        div{
+            margin-right: 12px;
+        }
     }
 }

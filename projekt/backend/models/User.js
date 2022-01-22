@@ -19,9 +19,6 @@ const userSchema = new Schema({
         required: true
     },
     registrationDate: Date,
-    profilePicture: {
-        type: String
-    },
     role: {
         type: String,
         required: true

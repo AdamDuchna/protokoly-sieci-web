@@ -53,3 +53,27 @@ export const addComment = (comment) => {
         ]
     })
  }
+
+
+ export const deleteComment = (id) => {
+    return createAction({
+        endpoint: `http://localhost:5000/comments/${id}`,
+        method: 'DELETE',
+        headers: {
+            "Content-Type": "application/json",
+        },
+        types: [
+            types.COMMENTS_DELETE_REQUEST,
+            {
+                 type: types.COMMENTS_DELETE_SUCCESS,
+                 payload: async (action, state, res) => {
+                    const json = await res.text();
+                    const toReturn = {"comments":{undefined:{id:json}}}
+                    return toReturn;
+                 },
+                 meta: { actionType: 'DEL_ONE' }
+            },
+            types.COMMENTS_DELETE_FAILURE
+        ]
+    })
+ }

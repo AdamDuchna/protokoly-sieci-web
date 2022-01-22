@@ -53,3 +53,26 @@ export const addPost = (posts) => {
         ]
     })
  }
+
+ export const deletePost = (id) => {
+    return createAction({
+        endpoint: `http://localhost:5000/posts/${id}`,
+        method: 'DELETE',
+        headers: {
+            "Content-Type": "application/json",
+        },
+        types: [
+            types.POSTS_DELETE_REQUEST,
+            {
+                 type: types.POSTS_DELETE_SUCCESS,
+                 payload: async (action, state, res) => {
+                    const json = await res.text();
+                    const toReturn = {"posts":{undefined:{id:json}}}
+                    return toReturn;
+                 },
+                 meta: { actionType: 'DEL_ONE' }
+            },
+            types.POSTS_DELETE_FAILURE
+        ]
+    })
+ }

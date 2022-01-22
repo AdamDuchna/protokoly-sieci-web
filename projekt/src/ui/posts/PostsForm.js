@@ -23,7 +23,6 @@ const PostCreationForm= ({login,addPost}) => {
                 initialValues={{
                     title:"",
                     text:"",
-                    photoUrl:"",
                     responses: 0 ,
                     author: '_id' in login ? login._id : ''
 
@@ -35,9 +34,6 @@ const PostCreationForm= ({login,addPost}) => {
 
                     <label name="text">Text</label>
                     <Field as="textarea" name="text"/>
-
-                    <label name="photoUrl">Image url</label>
-                    <Field name="photoUrl"/>
 
                     <div className='submit-box'>
                         <button type="submit">Submit</button>

@@ -87,7 +87,7 @@
 }
 
 .post-window .post-comments .comment .comment-message {
-  word-wrap: break-word;
+  word-break: break-all;
 }
 
 .post-window .post-comments .comment-info {
@@ -139,5 +139,24 @@
 
 .post-window .admin-panel div, .post-window .author-panel div {
   margin-right: 12px;
+}
+
+.post-window .admin-comment-panel, .post-window .author-comment-panel, .post-window .user-comment-panel {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.post-window .admin-comment-panel div, .post-window .author-comment-panel div, .post-window .user-comment-panel div {
+  margin-right: 4px;
+}
+
+.post-window .comment-edit {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
 }
 /*# sourceMappingURL=PostDetail.css.map */

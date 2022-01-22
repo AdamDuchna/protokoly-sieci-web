@@ -9,8 +9,6 @@ const postSchema = new Schema({
         type: String,
         required: true
     },
-    photoUrl: String,
-    responses: Number,
     creationDate: Date,
     author: {type: Schema.Types.ObjectId, ref: 'User'}
 

@@ -17,7 +17,7 @@ export const getUsers = () => {
            {
                 type: types.USERS_LIST_SUCCESS,
                 payload: async (action, state, res) => {
-                    console.log(res)
+                    
                     const json = await res.json();
                     const { entities } = normalize(json, usersSchema)
                     return entities;
@@ -42,7 +42,7 @@ export const addUser = (user) => {
             {
                  type: types.USERS_ADD_SUCCESS,
                  payload: async (action, state, res) => {
-                     console.log(res)
+                     
                      const json = await res.json();
                      const { entities } = normalize(json, userSchema)
                      return entities;

@@ -17,7 +17,7 @@ export const getLikes = () => {
            {
                 type: types.LIKES_LIST_SUCCESS,
                 payload: async (action, state, res) => {
-                    console.log(res)
+                    
                     const json = await res.json();
                     const { entities } = normalize(json, likesSchema)
                     return entities;
@@ -42,7 +42,7 @@ export const addLikes = (likes) => {
             {
                  type: types.LIKES_ADD_SUCCESS,
                  payload: async (action, state, res) => {
-                     console.log(res)
+                     
                      const json = await res.json();
                      const { entities } = normalize(json, likeSchema)
                      return entities;
@@ -68,7 +68,6 @@ export const addLikes = (likes) => {
             {
                  type: types.LIKES_EDIT_SUCCESS,
                  payload: async (action, state, res) => {
-                     console.log(res)
                      const json = await res.json();
                      const { entities } = normalize(json, likeSchema)
                      return entities;

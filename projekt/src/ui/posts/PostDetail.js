@@ -1,23 +1,28 @@
 import { connect } from "react-redux";
 import { getPostsList } from "../../ducks/posts/selectors";
-import { getPosts,deletePost } from "../../ducks/posts/operations";
+import { getPosts,deletePost,editPost } from "../../ducks/posts/operations";
 import { withRouter } from "react-router-dom";
 import "../../styling/posts/PostDetail.css"
 import {Link} from "react-router-dom";
 import { useEffect,useState } from "react";
 import { getUsersList } from "../../ducks/users/selectors";
 import { getUsers,deleteUser } from "../../ducks/users/operations";
-import { addComment,getComments,deleteComment } from "../../ducks/comments/operations";
+import { addComment,getComments,deleteComment,editComment } from "../../ducks/comments/operations";
 import { getCommentList } from "../../ducks/comments/selectors";
 import { addLikes,getLikes,editLikes,deleteLikes } from "../../ducks/likes/operations";
 import { getLikesList } from "../../ducks/likes/selectors";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,deleteLikes
-    ,getComments,comments,likes,addLikes,getLikes,editLikes,deleteComment,deleteUser } ,props) => {
+    ,getComments,comments,likes,addLikes,getLikes,editLikes,deleteComment,deleteUser,editComment,editPost } ,props) => {
     const [author,setAuthor] = useState(undefined)
     const [comment,setComment] = useState("")
     const [likeStatus,setLikeStatus] = useState("")
     const [shownComments,setShownComments] = useState(comments)
+    const [editComm,setEditComm] = useState(undefined)
+    const [editedComm,setEditedComm] = useState(undefined)
+    const [editPostId,setEditPostId] = useState(undefined)
+    const [editedTitle,setEditedTitle] = useState(undefined)
+    const [editedText,setEditedText] = useState(undefined)
     const history = useHistory()
 
     useEffect(() => {
@@ -53,6 +58,23 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
     }
     const handleBan = (id)=>{
         deleteUser(id)
+    }
+    const handleEditComm = (comm) => {
+        setEditComm(comm._id)
+        setEditedComm(comm.text)
+    }
+    const handleEditPost = (post) => {
+        setEditPostId(post._id)
+        setEditedTitle(post.title)
+        setEditedText(post.text)
+    }
+    const submitEditPost = (post) => {
+        setEditPostId(undefined)
+        editPost({...post,"text":editedText,"title":editedTitle})
+    }
+    const submitEditComm = (comment) => {
+        setEditComm(undefined)
+        editComment({...comment,"text":editedComm})
     }
     const handleVote = (vote)=>{
         if( "_id" in login){
@@ -119,10 +141,10 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
             {post ? 
             <div className="post-content">
                 <div className="post-title-date">
-                    <div>{post.title}</div>
+                    {editPostId !== post._id ? <div>{post.title}</div> : <input className="post-edit" value={editedTitle} onChange={(e)=>{setEditedTitle(e.target.value)}}></input>}
                     <div>{new Date(post.creationDate).toLocaleString()}</div>
                 </div>
-                <div>{post.text}</div>
+                {editPostId !== post._id ? <div className="post-text">{post.text}</div> : <textarea rows="6" className="post-edit"  value={editedText} onChange={(e)=>{setEditedText(e.target.value)}}></textarea>}
                 <div className="post-author-vote">
                     <div className="post-vote">
                         <div onClick={()=>handleVote("upvote")}><i className="fa fa-angle-up"></i></div>
@@ -146,7 +168,8 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
             post && post.author && login._id === post.author? 
                 <div className="author-panel">
                     <div onClick={()=>handleDeletePost(post._id,likes._id)}><i className="fa fa-trash"></i></div>
-                    <div><i className="fa fa-pencil"></i></div>
+                    <div onClick={()=>{handleEditPost(post)}}><i className="fa fa-pencil"></i></div>
+                    {editPostId === post._id ? <div onClick={()=>submitEditPost(post)}><i className="fa fa-check"></i> </div> : <></>}
                 </div> : <></>
             }
 
@@ -160,23 +183,25 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
             <div className="post-comments">
                 {shownComments && shownComments.map(comment => (<div className="comment" key={comment._id}>
                     <div className="comment-edit">
-                    <div className="comment-message">{comment.text}</div>
+                    {editComm !== comment._id ? <div className="comment-message">{comment.text}</div> : <input className="comment-message" value={editedComm} onChange={(e)=>{setEditedComm(e.target.value)}}></input>}
                     {
                         post && comment && comment.author && login._id !== post.author && login.role === "admin" ? 
                         <div className="admin-comment-panel">
+                            {editComm === comment._id ? <div onClick={()=>submitEditComm(comment)}><i className="fa fa-check"></i> </div> : <></>}
                             <div onClick={()=>handleDelete(comment._id)}><i className="fa fa-trash"></i></div>
                             {comment.author._id === login._id ? 
-                            <div><i className="fa fa-pencil"></i></div> : 
+                            <div onClick={()=>handleEditComm(comment)}><i className="fa fa-pencil"></i></div> : 
                             <div onClick={()=>handleBan(comment.author._id)}><i className="fa fa-ban"></i></div>}
                         </div> : <></>
                     }
                     {
                     post && comment && comment.author && login._id === post.author && (comment.author.role !== "admin" || login.role === "admin") ? 
                         <div className="author-comment-panel">
+                            {editComm === comment._id ? <div onClick={()=>submitEditComm(comment)}><i className="fa fa-check"></i> </div> : <></>}
                             <div onClick={()=>handleDelete(comment._id)}><i className="fa fa-trash"></i></div>
                             {login.role === "admin" && comment.author._id !== login._id ? <div onClick={()=>handleBan(comment.author._id)}><i className="fa fa-ban"></i></div>
                             : <></>}
-                            {login._id === comment.author._id ? <div><i className="fa fa-pencil"></i></div>
+                            {login._id === comment.author._id ? <div onClick={()=>handleEditComm(comment)}><i className="fa fa-pencil"></i></div>
                             : <></>}
                         </div> : <></>
                     }
@@ -184,8 +209,9 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
                     {
                      post && comment && comment.author && login._id !== post.author && comment.author._id === login._id  && login.role !== "admin"  ? 
                         <div className="user-comment-panel">
+                            {editComm === comment._id ? <div onClick={()=>submitEditComm(comment)}><i className="fa fa-check"></i> </div> : <></>}
                             <div onClick={()=>handleDelete(comment._id)}><i className="fa fa-trash"></i></div>
-                            <div><i className="fa fa-pencil"></i></div>
+                            <div onClick={()=>handleEditComm(comment)}><i className="fa fa-pencil"></i></div>
                         </div> : <></>
                     }
                     </div>
@@ -221,7 +247,9 @@ const mapDispatchToProps = {
     deleteComment,
     deletePost,
     deleteLikes,
-    deleteUser
+    deleteUser,
+    editComment,
+    editPost
     
 }
 

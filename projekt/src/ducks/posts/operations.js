@@ -17,7 +17,7 @@ export const getPosts = () => {
            {
                 type: types.POSTS_LIST_SUCCESS,
                 payload: async (action, state, res) => {
-                    console.log(res)
+                    
                     const json = await res.json();
                     const { entities } = normalize(json, postsSchema)
                     return entities;
@@ -28,6 +28,29 @@ export const getPosts = () => {
        ]
    })
 }
+export const editPost = (post) => {
+    return createAction({
+        endpoint: `http://localhost:5000/posts/${post._id}`,
+        method: 'PUT',
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(post),
+        types: [
+            types.POSTS_EDIT_REQUEST,
+            {
+                 type: types.POSTS_EDIT_SUCCESS,
+                 payload: async (action, state, res) => {
+                     const json = await res.json();
+                     const { entities } = normalize(json, postSchema)
+                     return entities;
+                 },
+                 meta: { actionType: 'UPDATE_ONE' }
+            },
+            types.POSTS_EDIT_FAILURE
+        ]
+    })
+ }
 
 export const addPost = (posts) => {
     return createAction({
@@ -42,7 +65,7 @@ export const addPost = (posts) => {
             {
                  type: types.POSTS_ADD_SUCCESS,
                  payload: async (action, state, res) => {
-                     console.log(res)
+                     
                      const json = await res.json();
                      const { entities } = normalize(json, postSchema)
                      return entities;

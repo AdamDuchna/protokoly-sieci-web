@@ -17,7 +17,6 @@ export const getComments = () => {
            {
                 type: types.COMMENTS_LIST_SUCCESS,
                 payload: async (action, state, res) => {
-                    console.log(res)
                     const json = await res.json();
                     const { entities } = normalize(json, commentSchema)
                     return entities;
@@ -42,7 +41,6 @@ export const addComment = (comment) => {
             {
                  type: types.COMMENTS_ADD_SUCCESS,
                  payload: async (action, state, res) => {
-                     console.log(res)
                      const json = await res.json();
                      const { entities } = normalize(json, commentSchema)
                      return entities;
@@ -54,6 +52,29 @@ export const addComment = (comment) => {
     })
  }
 
+ export const editComment = (comment) => {
+    return createAction({
+        endpoint: `http://localhost:5000/comments/${comment._id}`,
+        method: 'PUT',
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(comment),
+        types: [
+            types.COMMENTS_EDIT_REQUEST,
+            {
+                 type: types.COMMENTS_EDIT_SUCCESS,
+                 payload: async (action, state, res) => {
+                     const json = await res.json();
+                     const { entities } = normalize(json, commentSchema)
+                     return entities;
+                 },
+                 meta: { actionType: 'UPDATE_ONE' }
+            },
+            types.COMMENTS_EDIT_FAILURE
+        ]
+    })
+ }
 
  export const deleteComment = (id) => {
     return createAction({

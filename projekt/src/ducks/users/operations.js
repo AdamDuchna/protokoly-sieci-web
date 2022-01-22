@@ -53,3 +53,26 @@ export const addUser = (user) => {
         ]
     })
  }
+
+  export const deleteUser = (id) => {
+    return createAction({
+        endpoint: `http://localhost:5000/users/${id}`,
+        method: 'DELETE',
+        headers: {
+            "Content-Type": "application/json",
+        },
+        types: [
+            types.USERS_DELETE_REQUEST,
+            {
+                 type: types.USERS_DELETE_SUCCESS,
+                 payload: async (action, state, res) => {
+                    const json = await res.text();
+                    const toReturn = {"users":{undefined:{id:json}}}
+                    return toReturn;
+                 },
+                 meta: { actionType: 'DEL_ONE' }
+            },
+            types.USERS_DELETE_FAILURE
+        ]
+    })
+ }

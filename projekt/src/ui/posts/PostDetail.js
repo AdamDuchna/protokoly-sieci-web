@@ -6,16 +6,19 @@ import "../../styling/posts/PostDetail.css"
 import {Link} from "react-router-dom";
 import { useEffect,useState } from "react";
 import { getUsersList } from "../../ducks/users/selectors";
-import { getUsers } from "../../ducks/users/operations";
+import { getUsers,deleteUser } from "../../ducks/users/operations";
 import { addComment,getComments,deleteComment } from "../../ducks/comments/operations";
 import { getCommentList } from "../../ducks/comments/selectors";
-import { addLikes,getLikes,editLikes } from "../../ducks/likes/operations";
+import { addLikes,getLikes,editLikes,deleteLikes } from "../../ducks/likes/operations";
 import { getLikesList } from "../../ducks/likes/selectors";
-const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,getComments,comments,likes,addLikes,getLikes,editLikes,deleteComment } ,props) => {
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
+const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,deleteLikes
+    ,getComments,comments,likes,addLikes,getLikes,editLikes,deleteComment,deleteUser } ,props) => {
     const [author,setAuthor] = useState(undefined)
     const [comment,setComment] = useState("")
     const [likeStatus,setLikeStatus] = useState("")
     const [shownComments,setShownComments] = useState(comments)
+    const history = useHistory()
 
     useEffect(() => {
         if(!post){getPosts()}
@@ -39,13 +42,17 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,get
         deleteComment(id)
     }
     const handleDeletePost = (PostId,LikesId) => {
+        history.push("/")
         deletePost(PostId)
-
+        deleteLikes(LikesId)
     }
 
     const handleSubmit = (comm)=>{
         addComment(comm)
         setComment("")
+    }
+    const handleBan = (id)=>{
+        deleteUser(id)
     }
     const handleVote = (vote)=>{
         if( "_id" in login){
@@ -128,20 +135,18 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,get
             </div>: 
             <div>Loading</div>}
             {
-                post && login._id !== post.author && login.role === "admin" ? 
+                post && post.author && login._id !== post.author && login.role === "admin" ? 
                 <div className="admin-panel">
                     <div onClick={()=>handleDeletePost(post._id,likes._id)}><i className="fa fa-trash"></i></div>
-                    <div><i className="fa fa-ban"></i></div>
+                    <div onClick={()=>handleBan(post.author)}><i className="fa fa-ban"></i></div>
                 </div> : <></>
             }
 
             {
-            post && login._id === post.author? 
+            post && post.author && login._id === post.author? 
                 <div className="author-panel">
                     <div onClick={()=>handleDeletePost(post._id,likes._id)}><i className="fa fa-trash"></i></div>
                     <div><i className="fa fa-pencil"></i></div>
-                    {login.role === "admin" ? <div><i className="fa fa-ban"></i></div>
-                     : <></>}
                 </div> : <></>
             }
 
@@ -157,25 +162,27 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,get
                     <div className="comment-edit">
                     <div className="comment-message">{comment.text}</div>
                     {
-                        post && login._id !== post.author && login.role === "admin" ? 
+                        post && comment && comment.author && login._id !== post.author && login.role === "admin" ? 
                         <div className="admin-comment-panel">
                             <div onClick={()=>handleDelete(comment._id)}><i className="fa fa-trash"></i></div>
-                            <div><i className="fa fa-ban"></i></div>
+                            {comment.author._id === login._id ? 
+                            <div><i className="fa fa-pencil"></i></div> : 
+                            <div onClick={()=>handleBan(comment.author._id)}><i className="fa fa-ban"></i></div>}
                         </div> : <></>
                     }
                     {
-                    post && login._id === post.author && comment.author.role !== "admin" || login.role == "admin" ? 
+                    post && comment && comment.author && login._id === post.author && (comment.author.role !== "admin" || login.role === "admin") ? 
                         <div className="author-comment-panel">
                             <div onClick={()=>handleDelete(comment._id)}><i className="fa fa-trash"></i></div>
-                            {login.role === "admin" ? <div><i className="fa fa-ban"></i></div>
+                            {login.role === "admin" && comment.author._id !== login._id ? <div onClick={()=>handleBan(comment.author._id)}><i className="fa fa-ban"></i></div>
                             : <></>}
                             {login._id === comment.author._id ? <div><i className="fa fa-pencil"></i></div>
                             : <></>}
                         </div> : <></>
                     }
 
-{
-                    post && login._id !== post.author && comment.author._id === login._id&& comment.author.role !== "admin" ? 
+                    {
+                     post && comment && comment.author && login._id !== post.author && comment.author._id === login._id  && login.role !== "admin"  ? 
                         <div className="user-comment-panel">
                             <div onClick={()=>handleDelete(comment._id)}><i className="fa fa-trash"></i></div>
                             <div><i className="fa fa-pencil"></i></div>
@@ -212,7 +219,9 @@ const mapDispatchToProps = {
     getLikes,
     editLikes,
     deleteComment,
-    deletePost
+    deletePost,
+    deleteLikes,
+    deleteUser
     
 }
 

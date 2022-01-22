@@ -79,3 +79,26 @@ export const addLikes = (likes) => {
         ]
     })
  }
+
+ export const deleteLikes = (id) => {
+    return createAction({
+        endpoint: `http://localhost:5000/likes/${id}`,
+        method: 'DELETE',
+        headers: {
+            "Content-Type": "application/json",
+        },
+        types: [
+            types.LIKES_DELETE_REQUEST,
+            {
+                 type: types.LIKES_DELETE_SUCCESS,
+                 payload: async (action, state, res) => {
+                    const json = await res.text();
+                    const toReturn = {"likes":{undefined:{id:json}}}
+                    return toReturn;
+                 },
+                 meta: { actionType: 'DEL_ONE' }
+            },
+            types.LIKES_DELETE_FAILURE
+        ]
+    })
+ }

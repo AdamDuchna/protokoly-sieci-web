@@ -1,12 +1,11 @@
 import { Formik,Field,Form } from "formik"
-import React, { useEffect,useState} from "react"
+import React, { useState} from "react"
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import "../../styling/posts/PostCreationForm.css"
-import sha1 from "crypto-js/sha1";
 import {useHistory} from "react-router-dom";
 import { addPost } from "../../ducks/posts/operations";
-import { getPostsList } from "../../ducks/posts/selectors";
+
 const PostCreationForm= ({login,addPost}) => {
     const history = useHistory()
     const [postStatus,setPostStatus] = useState('')

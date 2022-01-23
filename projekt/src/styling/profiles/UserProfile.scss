@@ -1,23 +1,8 @@
-.post-menu{
-    display:flex;
-    justify-content: center;
-    flex-wrap: wrap;
+.user-profile{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     margin-top: 20px;
-    input{
-        padding-left: 10px;
-        border: none;
-        width: 60vw;
-    }
-    .post-add{
-        padding: 8px;
-        background-color: white;
-        div{
-            background-color:black;
-            color: white;
-            width: 10vw;
-            text-align: center;
-        }
-    }
     .post-list{
         padding: 12px;
         margin-top: 20px;
@@ -37,7 +22,24 @@
         }
         
     }
+    .user-data{
+        padding: 12px;
+        background-color: white;
+        width: 70vw;
+        display: flex;
+        justify-content: space-between;
+
+    }
     .posts{
         padding-bottom:8px;
+    }
+    input{
+        border:none;
+    }
+    .admin-panel,.user-panel{
+        display: flex;
+        div{
+            margin-right: 6px;
+        }
     }
 }

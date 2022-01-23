@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect,useState } from 'react'
 import { Link } from 'react-router-dom';
 import '../../styling/navbar/Navbar.css'
 import Cookies from 'js-cookie';
@@ -7,12 +7,32 @@ import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import { getUsersList } from '../../ducks/users/selectors';
 import { getUsers } from '../../ducks/users/operations';
+import { useLocation,useHistory } from 'react-router-dom';
 
 const Navbar = ({login,users,getUsers,setLoginAction}) => { 
+    const location = useLocation()
+    const history = useHistory()
+    const [calls,setCalls] = useState(0)
     useEffect(() => {
-        if(users.length === 0){getUsers()}
-    },[users])
-
+        if(calls<2){
+            if(users.length === 0){getUsers()}
+            setCalls(calls+1)
+        }
+    },[users,getUsers,calls])
+    useEffect(()=>{
+        if('_id' in login){Cookies.set("sessionRoute",location.pathname , { expires: 1 })}
+    },[location,login])
+    useEffect(()=>{
+        if('_id' in login){Cookies.set("sessionUser",login._id , { expires: 1 })}
+    },[login])
+        
+    useEffect(()=>{
+        if("_id" in login){
+            const id = Cookies.get("sessionUser")
+            const route = Cookies.get("sessionRoute")
+            if(login._id === id){history.push(route)}
+        }
+    },[login,history])
     useEffect(()=>{
         const isEmpty = Object.keys(login).length === 0;
         if(users && isEmpty){
@@ -43,7 +63,7 @@ const Navbar = ({login,users,getUsers,setLoginAction}) => {
                 </div> 
                 : 
                 <div className='login-register-box'>
-                <Link to='/profile' style={{ textDecoration: 'none', color: "black" }}><div className='login'>{login.login}</div></Link>
+                <Link to={`/profile/${login._id}`} style={{ textDecoration: 'none', color: "black" }}><div className='login'>{login.login}</div></Link>
                 <Link to='/login' style={{ textDecoration: 'none', color: "black" }}><div className='register' onClick={handleLogout}>Logout</div></Link>
                 </div> 
                 }

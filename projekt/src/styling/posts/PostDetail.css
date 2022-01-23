@@ -169,4 +169,8 @@
 .post-window .post-edit {
   border: none;
 }
+
+.post-window .posts {
+  padding: 12px;
+}
 /*# sourceMappingURL=PostDetail.css.map */

@@ -10,9 +10,10 @@ import {useHistory} from "react-router-dom";
 
 const UserRegisterForm= ({users,getUsers,addUser}) => {
     const history = useHistory()
+
     useEffect(() => {
         if(users.length === 0){getUsers()}
-    },[users])
+    },[users,getUsers])
     const handleSubmit=(values)=>{
         history.push("/")
         const encrypted = sha1(values.password).toString()

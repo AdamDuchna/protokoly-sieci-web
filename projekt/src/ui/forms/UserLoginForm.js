@@ -13,9 +13,13 @@ import {useHistory} from "react-router-dom";
 const UserLoginForm= ({users,getUsers,setLoginAction}) => {
     const [loginStatus,setLoginStatus] = useState('')
     const history = useHistory()
+    const [calls,setCalls] = useState(0)
     useEffect(() => {
-        if(users.length === 0){getUsers()}
-    },[users])
+        if(calls<2){
+            if(users.length === 0){getUsers()}
+            setCalls(calls+1)
+        }
+    },[users,getUsers,calls])
     const handleSubmit=(values)=>{
         const {login,password} = values
         const encrypted = sha1(password).toString()

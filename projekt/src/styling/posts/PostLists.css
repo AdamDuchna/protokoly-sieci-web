@@ -58,4 +58,8 @@
 .post-menu .post-list .post:nth-of-type(2n) {
   background-color: #dfdfdf;
 }
+
+.post-menu .posts {
+  padding-bottom: 8px;
+}
 /*# sourceMappingURL=PostLists.css.map */

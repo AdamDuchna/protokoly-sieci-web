@@ -23,14 +23,18 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
     const [editPostId,setEditPostId] = useState(undefined)
     const [editedTitle,setEditedTitle] = useState(undefined)
     const [editedText,setEditedText] = useState(undefined)
+    const [calls,setCalls] = useState(0)
     const history = useHistory()
 
     useEffect(() => {
-        if(!post){getPosts()}
-        if(users.length === 0){getUsers()}
-        if(comments.length === 0){getComments()}
-        if(!likes){getLikes()}
-    },[post,likes])
+        if(calls<2){
+            if(!post){getPosts()}
+            if(users.length === 0){getUsers()}
+            if(comments.length === 0){getComments()}
+            if(!likes){getLikes()}
+            setCalls(calls+1)
+        }
+    },[post,likes,comments,users,getPosts,getUsers,getComments,getLikes,calls])
 
     useEffect(()=>{
         if(users && post)setAuthor(users.find(user=>user._id === post.author))
@@ -38,7 +42,7 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
 
     useEffect(()=>{
         const mappedComments = comments.slice(0).reduce((acc,comm)=>{
-        return [...acc,{...comm,"author":users.find(u=>u._id == comm.author)}]
+        return [...acc,{...comm,"author":users.find(u=>u._id === comm.author)}]
         },[])
         setShownComments(mappedComments)
     },[users,comments])
@@ -102,8 +106,8 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
                             editLikes(unvote)
                             break;
                         }
-                        break;
-                    }            
+                    }    
+                    break;        
                 case "downvote":
                     if(!likes){
                     const downvote={"count": -1,"post": post._id,"usersUpvotes": [],"usersDownvotes": [login._id]}
@@ -131,11 +135,11 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
                         }
                     }
                     break;
+            default:
             }
         }
         else{setLikeStatus("Login to vote")}
     }
-
     return (
         <div className="post-window">
             {post ? 
@@ -152,7 +156,8 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
                         <div onClick={()=>handleVote("downvote")}><i className="fa fa-angle-down"></i></div>
                         <div className="login-status">{likeStatus}</div>
                     </div>
-                    <div className="post-author">{author ? author.login : <div>[removed]</div>}</div>
+                    <div className="post-author">{author ? <Link to={`/profile/${author._id}`} 
+                    style={{ textDecoration: 'none', color: "black" }}><div>{author.login}</div></Link> : <div>[removed]</div>}</div>
                 </div>
             </div>: 
             <div>Loading</div>}
@@ -181,6 +186,7 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
                 <button onClick={()=>{ handleSubmit({"text":comment,"author":login._id,"post":post._id})}}>Send</button>
             </div>
             <div className="post-comments">
+                <div>Comments</div>
                 {shownComments && shownComments.map(comment => (<div className="comment" key={comment._id}>
                     <div className="comment-edit">
                     {editComm !== comment._id ? <div className="comment-message">{comment.text}</div> : <input className="comment-message" value={editedComm} onChange={(e)=>{setEditedComm(e.target.value)}}></input>}
@@ -216,7 +222,8 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
                     }
                     </div>
                     <div className="comment-info">
-                        {comment.author ? <div>{comment.author.login}</div> : <div>[removed]</div> }
+                        {comment.author ? <Link to={`/profile/${comment.author._id}`} 
+                        style={{ textDecoration: 'none', color: "black" }}><div>{comment.author.login}</div></Link> : <div>[removed]</div> }
                         <div>{new Date(comment.creationDate).toLocaleString()}</div>
                     </div>
                     

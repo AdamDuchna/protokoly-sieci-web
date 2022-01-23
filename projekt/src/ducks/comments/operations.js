@@ -3,7 +3,6 @@ import { schema, normalize} from 'normalizr';
 import types from "./types";
 
 const commentSchema = new schema.Entity('comments');
-const commentsSchema = new schema.Array(commentSchema);
 
 export const getComments = () => {
    return createAction({

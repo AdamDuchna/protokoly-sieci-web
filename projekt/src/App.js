@@ -10,6 +10,7 @@ import UserRegisterForm from './ui/forms/UserRegisterForm';
 import PostsList from './ui/posts/PostsList';
 import PostsForm from './ui/posts/PostsForm';
 import PostDetail from './ui/posts/PostDetail';
+import UserProfile from './ui/profiles/UserProfile';
 function App() {
   return (
     <div className="App">
@@ -20,6 +21,7 @@ function App() {
               <Route path='/register'><UserRegisterForm/></Route>
               <Route path='/posts/add'><PostsForm/></Route>
               <Route path='/posts/:id'><PostDetail/></Route>
+              <Route path='/profile/:id'><UserProfile/></Route>
               <Route path='/'><PostsList/></Route>
             </Routes>
         </Router>

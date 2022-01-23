@@ -17,7 +17,6 @@ const defaultState = allEntities.reduce(
 const entityReducer = (entity, state = { allIds: [], byId: {} }, action) => {
     const actionEntities = action.payload[entity].undefined;
     const { actionType } = action.meta;
-    console.log(actionEntities,{byId:Object.fromEntries(Object.entries(state.byId).slice(0).filter(([k,v]) => k!==actionEntities.id)),allIds:state.allIds.slice(0).filter(id => id !== actionEntities.id)})
 
 
 

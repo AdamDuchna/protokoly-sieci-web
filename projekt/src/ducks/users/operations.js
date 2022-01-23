@@ -54,6 +54,31 @@ export const addUser = (user) => {
     })
  }
 
+ export const editUser = (user) => {
+    return createAction({
+        endpoint: `http://localhost:5000/users/${user._id}`,
+        method: 'PUT',
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(user),
+        types: [
+            types.USERS_EDIT_REQUEST,
+            {
+                 type: types.USERS_EDIT_SUCCESS,
+                 payload: async (action, state, res) => {
+                     const json = await res.json();
+                     const { entities } = normalize(json, userSchema)
+                     return entities;
+                 },
+                 meta: { actionType: 'UPDATE_ONE' }
+            },
+            types.USERS_EDIT_FAILURE
+        ]
+    })
+ }
+
+
   export const deleteUser = (id) => {
     return createAction({
         endpoint: `http://localhost:5000/users/${id}`,

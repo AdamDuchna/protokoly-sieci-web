@@ -1,16 +1,68 @@
 import { useEffect,useState} from "react";
 import { connect } from "react-redux";
 import {Link} from "react-router-dom";
-import { getPosts } from "../../ducks/posts/operations";
+import { getPosts,mqttAddPost,mqttDelPost,mqttEditPost } from "../../ducks/posts/operations";
 import { getPostsList } from "../../ducks/posts/selectors";
-import "../../styling/posts/PostLists.css"
+import "../../styling/posts/PostLists.css";
+import {client,connectStatus,mqttConnect,mqttDisconnect,mqttUnSub,mqttSub,mqttPublish} from '../../mqtt/mqtt.js';
 
-const PostsList = ({posts,getPosts,login}) => {
+const PostsList = ({posts,getPosts,login,mqttAddPost,mqttDelPost,mqttEditPost}) => {
     const [shownPosts,setShownPosts] = useState(undefined)
     const [calls,setCalls] = useState(0)
+
+    const [connStatus,setConnStatus] = useState(connectStatus)
+    /*MQTT*/
+
+      useEffect(() => {
+        if (client) {
+          client.on('connect', () => {
+            setConnStatus('Connected');
+          });
+          client.on('error', (err) => {
+            console.error('Connection error: ', err);
+            client.end();
+          });
+          client.on('reconnect', () => {
+            setConnStatus('Reconnecting');
+          });
+          client.on('message', (topic, message) => {
+              switch (topic){
+                    case "posts/edit":
+                        const postEdited = JSON.parse(message)
+                        mqttEditPost(postEdited)
+                        break;
+                    case "posts/delete":
+                        const postDelete = message.toString()
+                        mqttDelPost(postDelete)
+                        break;
+                    case "posts/add":
+                        const postAdd = JSON.parse(message)
+                        mqttAddPost(postAdd)
+                        break;
+                    default:
+                        break;
+              }
+          });
+        }
+      }, [client]);
+    
+    const record = {topic:"default",qos: 0,};
+    const connect = () => {mqttConnect(`ws://broker.emqx.io:8083/mqtt`)};
+    const subscribe = (topic)=>{mqttSub({...record,"topic":topic})};
+
+    useEffect(()=>{connect()},[])
+    useEffect(()=>{
+    if(connStatus=="Connected"){
+    subscribe("posts/edit");
+    subscribe("posts/delete");
+    subscribe("posts/add");}
+    },[connStatus])
+
+    /*MQTT*/
+    
     useEffect(() => {
         if(calls<2){
-        if(posts.length === 0){getPosts()}
+        if(posts.length === 0)getPosts()
         setCalls(calls+1)
         }
     },[posts,getPosts,calls])
@@ -25,6 +77,7 @@ const PostsList = ({posts,getPosts,login}) => {
         }
         else{setShownPosts(posts)}
     }
+
     return (
     <div className="post-menu">
         <input onChange={e=>handleSearch(e.target.value)} placeholder="Search for posts"></input>
@@ -47,7 +100,10 @@ const mapStateToProps = (state) =>{
 }
 
 const mapDispatchToProps = {
-    getPosts
+    getPosts,
+    mqttAddPost,
+    mqttDelPost,
+    mqttEditPost
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(PostsList);

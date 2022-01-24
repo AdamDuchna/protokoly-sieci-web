@@ -99,3 +99,27 @@ export const addPost = (posts) => {
         ]
     })
  }
+
+ export const mqttAddPost = (post) => {
+    const {entities} = normalize(post, postSchema)
+    return{
+    type: types.POSTS_ADD_SUCCESS,
+    payload: entities,
+    meta: {actionType: 'ADD_ONE'}
+}};
+
+export const mqttDelPost = (post) => {
+    const toReturn = {"posts":{undefined:{id:post}}}
+    return{
+    type: types.POSTS_DELETE_SUCCESS,
+    payload: toReturn,
+    meta: {actionType: 'DEL_ONE'}
+}};
+
+export const mqttEditPost = (post) => {
+    const {entities} = normalize(post, postSchema)
+    return{
+    type: types.POSTS_EDIT_SUCCESS,
+    payload: entities,
+    meta: {actionType: 'UPDATE_ONE'}
+}};

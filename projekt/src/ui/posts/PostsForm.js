@@ -1,18 +1,31 @@
 import { Formik,Field,Form } from "formik"
-import React, { useState} from "react"
+import React, { useState,useEffect} from "react"
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import "../../styling/posts/PostCreationForm.css"
 import {useHistory} from "react-router-dom";
-import { addPost } from "../../ducks/posts/operations";
+import { addPost,mqttAddPost } from "../../ducks/posts/operations";
+import {client,connectStatus,mqttConnect,mqttDisconnect,mqttUnSub,mqttSub,mqttPublish} from '../../mqtt/mqtt.js';
+import { v4 as uuidv4 } from 'uuid';
 
-const PostCreationForm= ({login,addPost}) => {
+const PostCreationForm= ({login,addPost}) => {    
+    const record = {topic:"default",qos: 0,};
+    const connect = () => {mqttConnect(`ws://broker.emqx.io:8083/mqtt`)};
+    const publish = (payload) => {mqttPublish({...record,...payload})};
+
+    useEffect(()=>{connect()},[])
+
+    /*MQTT*/
+
     const history = useHistory()
     const [postStatus,setPostStatus] = useState('')
     const handleSubmit=(values)=>{
         if('_id' in login){
-            history.push('/') 
             addPost(values)
+            publish({"topic":"posts/add","payload":JSON.stringify({...values,"creationDate": Date(),"_id": uuidv4()})})
+            history.push('/')
+
+             
         }
         else{setPostStatus("Login to post")}
     }

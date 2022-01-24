@@ -101,3 +101,19 @@ export const addLikes = (likes) => {
         ]
     })
  }
+
+ export const mqttDelLikes = (likes) => {
+    const toReturn = {"likes":{undefined:{id:likes}}}
+    return{
+    type: types.LIKES_DELETE_SUCCESS,
+    payload: toReturn,
+    meta: {actionType: 'DEL_ONE'}
+}};
+
+export const mqttEditLikes = (likes) => {
+    const {entities} = normalize(likes, likeSchema)
+    return{
+    type: types.LIKES_EDIT_SUCCESS,
+    payload: entities,
+    meta: {actionType: 'UPDATE_ONE'}
+}};

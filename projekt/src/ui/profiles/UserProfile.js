@@ -3,13 +3,74 @@ import { withRouter } from "react-router-dom";
 import {Link} from "react-router-dom";
 import { useEffect } from "react";
 import { getUsers,deleteUser,editUser } from "../../ducks/users/operations";
-import { getPosts } from "../../ducks/posts/operations";
+import { getPosts,mqttEditPost,mqttDelPost,mqttAddPost } from "../../ducks/posts/operations";
 import { getPostsList } from "../../ducks/posts/selectors";
 import { getUsersList } from "../../ducks/users/selectors";
 import "../../styling/profiles/UserProfile.css"
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import { useState } from "react";
-const UserProfile = ({user,posts,getUsers,getPosts,login,deleteUser,editUser}) => {
+import {client,connectStatus,mqttConnect,mqttDisconnect,mqttUnSub,mqttSub,mqttPublish} from '../../mqtt/mqtt.js';
+const UserProfile = ({user,posts,getUsers,getPosts,login,deleteUser,editUser,mqttAddPost}) => {
+    
+    const [connStatus,setConnStatus] = useState(connectStatus)
+    /*MQTT*/
+
+      useEffect(() => {
+        if (client) {
+          client.on('connect', () => {
+            setConnStatus('Connected');
+          });
+          client.on('error', (err) => {
+            console.error('Connection error: ', err);
+            client.end();
+          });
+          client.on('reconnect', () => {
+            setConnStatus('Reconnecting');
+          });
+          client.on('message', (topic, message) => {
+              switch (topic){
+                    case "posts/edit":
+                        const postEdited = JSON.parse(message)
+                        mqttEditPost(postEdited)
+                        break;
+                    case "posts/delete":
+                        const postDelete = message.toString()
+                        mqttDelPost(postDelete)
+                        break;
+                    case "posts/add":
+                        const postAdd = JSON.parse(message)
+                        mqttAddPost(postAdd)
+                        break;
+                    case "users/delete":
+                        const userDel = JSON.parse(message)
+                        mqttAddPost(userDel)
+                        break;
+                    case "users/edit":
+                        const userEdit = JSON.parse(message)
+                        mqttAddPost(userEdit)
+                        break;
+                    default:
+                        break;
+              }
+          });
+        }
+      }, [client]);
+    
+    const record = {topic:"default",qos: 0,};
+    const connect = () => {mqttConnect(`ws://broker.emqx.io:8083/mqtt`)};
+    const subscribe = (topic)=>{mqttSub({...record,"topic":topic})};
+
+    useEffect(()=>{connect()},[])
+    useEffect(()=>{
+    if(connStatus=="Connected"){
+    subscribe("posts/edit");
+    subscribe("posts/delete");
+    subscribe("posts/add");}
+    subscribe("users/delete");
+    subscribe("users/edit");
+    },[connStatus])
+
+    /*MQTT*/
     const history = useHistory()
     const [calls,setCalls] = useState(0)
     const [editing,setEditing] = useState(false)
@@ -58,8 +119,8 @@ const UserProfile = ({user,posts,getUsers,getPosts,login,deleteUser,editUser}) =
                     <div className="panels">
                     {login.role === "admin" && user._id !== login._id? 
                     <div className="admin-panel">
-                        { user.role === "admin" ? <div onClick={()=>handleSetRole("user")}><i class="fa fa-level-down"></i></div> : 
-                        <div onClick={()=>handleSetRole("admin")}><i class="fa fa-level-up"></i></div>}
+                        { user.role === "admin" ? <div onClick={()=>handleSetRole("user")}><i className="fa fa-level-down"></i></div> : 
+                        <div onClick={()=>handleSetRole("admin")}><i className="fa fa-level-up"></i></div>}
                         <div onClick={()=>handleBan(user._id)}><i className="fa fa-ban"></i></div>
                     </div> : <></>
                     }
@@ -95,7 +156,8 @@ const mapDispatchToProps = {
     getUsers,
     getPosts,
     deleteUser,
-    editUser
+    editUser,
+    mqttAddPost
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(UserProfile));

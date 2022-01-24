@@ -101,3 +101,19 @@ export const addUser = (user) => {
         ]
     })
  }
+
+ export const mqttDelUser = (user) => {
+    const toReturn = {"users":{undefined:{id:user}}}
+    return{
+    type: types.USERS_DELETE_SUCCESS,
+    payload: toReturn,
+    meta: {actionType: 'DEL_ONE'}
+}};
+
+export const mqttEditUser = (user) => {
+    const {entities} = normalize(user, userSchema)
+    return{
+    type: types.USERS_EDIT_SUCCESS,
+    payload: entities,
+    meta: {actionType: 'UPDATE_ONE'}
+}};

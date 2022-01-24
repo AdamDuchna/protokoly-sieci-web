@@ -1,19 +1,97 @@
 import { connect } from "react-redux";
 import { getPostsList } from "../../ducks/posts/selectors";
-import { getPosts,deletePost,editPost } from "../../ducks/posts/operations";
+import { getPosts,deletePost,editPost,mqttDelPost,mqttEditPost } from "../../ducks/posts/operations";
 import { withRouter } from "react-router-dom";
 import "../../styling/posts/PostDetail.css"
 import {Link} from "react-router-dom";
 import { useEffect,useState } from "react";
 import { getUsersList } from "../../ducks/users/selectors";
-import { getUsers,deleteUser } from "../../ducks/users/operations";
-import { addComment,getComments,deleteComment,editComment } from "../../ducks/comments/operations";
+import { getUsers,deleteUser, mqttDelUser, mqttEditUser } from "../../ducks/users/operations";
+import { addComment,getComments,deleteComment,editComment,mqttDelComm,mqttAddComm,mqttEditComm } from "../../ducks/comments/operations";
 import { getCommentList } from "../../ducks/comments/selectors";
-import { addLikes,getLikes,editLikes,deleteLikes } from "../../ducks/likes/operations";
+import { addLikes,getLikes,editLikes,deleteLikes,mqttDelLikes,mqttEditLikes } from "../../ducks/likes/operations";
 import { getLikesList } from "../../ducks/likes/selectors";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
-const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,deleteLikes
+import {client,connectStatus,mqttConnect,mqttDisconnect,mqttUnSub,mqttSub,mqttPublish} from '../../mqtt/mqtt.js';
+import { v4 as uuidv4 } from 'uuid';
+
+const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,deleteLikes,mqttDelComm,mqttAddComm
+    ,mqttEditComm,mqttDelPost,mqttEditPost,mqttDelLikes,mqttEditLikes,mqttDelUser, mqttEditUser
     ,getComments,comments,likes,addLikes,getLikes,editLikes,deleteComment,deleteUser,editComment,editPost } ,props) => {
+
+        const [connStatus,setConnStatus] = useState(connectStatus)
+        /*MQTT*/
+
+          useEffect(() => {
+            if (client) {
+              client.on('connect', () => {
+                setConnStatus('Connected');
+              });
+              client.on('error', (err) => {
+                console.error('Connection error: ', err);
+                client.end();
+              });
+              client.on('reconnect', () => {
+                setConnStatus('Reconnecting');
+              });
+              client.on('message', (topic, message) => {
+                  switch (topic){
+                        case "comments/delete":
+                            const id = message.toString()
+                            mqttDelComm(id)
+                            break;
+                        case "comments/add":
+                            const msg = JSON.parse(message)
+                            mqttAddComm(msg)
+                            break;
+                        case "comments/edit":
+                            const edited = JSON.parse(message)
+                            mqttEditComm(edited)
+                            break;
+                        case "posts/edit":
+                            const postEdited = JSON.parse(message)
+                            mqttEditPost(postEdited)
+                            break;
+                        case "posts/delete":
+                            const postDelete = message.toString()
+                            mqttDelPost(postDelete)
+                            break;
+                        case "likes/delete":
+                            const likesDelete = message.toString()
+                            mqttDelLikes(likesDelete)
+                            break;
+                        case "likes/edit":
+                            const likesEdit = JSON.parse(message)
+                            mqttEditLikes(likesEdit)
+                        case "users/delete":
+                            const userDel = message.toString()
+                            mqttDelUser(userDel)
+                            break;
+                        default:
+                            break;
+                  }
+              });
+            }
+          }, [client]);
+        
+        const record = {topic:"default",qos: 0,};
+        const connect = () => {mqttConnect(`ws://broker.emqx.io:8083/mqtt`)};
+        const publish = (payload) => {mqttPublish({...record,...payload})};
+        const subscribe = (topic)=>{mqttSub({...record,"topic":topic})};
+        const unsubscribe = (topic)=>{mqttUnSub({...record,"topic":topic})};
+    
+        useEffect(()=>{connect()},[])
+        useEffect(()=>{if(connStatus=="Connected"){
+        subscribe("comments/add");
+        subscribe("comments/edit");
+        subscribe("comments/delete")}
+        subscribe("posts/edit");
+        subscribe("posts/delete");
+        subscribe("likes/edit");
+        },[connStatus])
+    
+        /*MQTT*/
+    
     const [author,setAuthor] = useState(undefined)
     const [comment,setComment] = useState("")
     const [likeStatus,setLikeStatus] = useState("")
@@ -25,9 +103,10 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
     const [editedText,setEditedText] = useState(undefined)
     const [calls,setCalls] = useState(0)
     const history = useHistory()
+    
 
     useEffect(() => {
-        if(calls<2){
+        if(calls<3){
             if(!post){getPosts()}
             if(users.length === 0){getUsers()}
             if(comments.length === 0){getComments()}
@@ -49,19 +128,29 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
 
     const handleDelete = (id)=>{
         deleteComment(id)
+        publish({"topic":"comments/delete","payload":id})
     }
-    const handleDeletePost = (PostId,LikesId) => {
+    const handleDeletePost = (post,likes) => {
         history.push("/")
-        deletePost(PostId)
-        deleteLikes(LikesId)
+        unsubscribe("posts/add")
+        unsubscribe("likes/add")
+        if(post){deletePost(post._id); publish({"topic":"posts/delete","payload":post._id})}
+        if(likes){deleteLikes(likes._id); publish({"topic":"likes/delete","payload":likes._id})}
+        subscribe("posts/add")
+        subscribe("likes/add")
     }
-
     const handleSubmit = (comm)=>{
         addComment(comm)
+        unsubscribe("comments/add")
+        publish({"topic":"comments/add","payload":JSON.stringify({...comm,"creationDate": Date(),"_id": uuidv4()})})
         setComment("")
+        subscribe("comments/add")
     }
     const handleBan = (id)=>{
         deleteUser(id)
+        unsubscribe("users/delete")
+        publish({"topic":"users/delete","payload":id})
+        subscribe("users/delete")
     }
     const handleEditComm = (comm) => {
         setEditComm(comm._id)
@@ -75,10 +164,16 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
     const submitEditPost = (post) => {
         setEditPostId(undefined)
         editPost({...post,"text":editedText,"title":editedTitle})
+        unsubscribe("posts/edit")
+        publish({"topic":"posts/edit","payload":JSON.stringify({...post,"text":editedText,"title":editedTitle})})
+        subscribe("posts/edit")
     }
     const submitEditComm = (comment) => {
         setEditComm(undefined)
         editComment({...comment,"text":editedComm})
+        unsubscribe("comments/edit")
+        publish({"topic":"comments/edit","payload":JSON.stringify({...comment,"text":editedComm,"author":comment.author._id})})
+        subscribe("comments/edit")
     }
     const handleVote = (vote)=>{
         if( "_id" in login){
@@ -93,17 +188,26 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
                             const unvote ={...likes,"count": likes.count-1,
                             "usersUpvotes": [ ...likes.usersUpvotes.filter(user=>user !== login._id)]}
                             editLikes(unvote)
+                            unsubscribe("likes/edit")
+                            publish({"topic":"likes/edit","payload":JSON.stringify(unvote)})
+                            subscribe("likes/edit")
                             break;
                         }
                         else if(likes.usersDownvotes.includes(login._id)){
                             const unvote ={...likes,"count": likes.count+2, "usersDownvotes": [ ...likes.usersDownvotes.filter(user=>user !== login._id)],"usersUpvotes": [...likes.usersUpvotes,login._id]}
                             editLikes(unvote)
+                            unsubscribe("likes/edit")
+                            publish({"topic":"likes/edit","payload":JSON.stringify(unvote)})
+                            subscribe("likes/edit")
                             break;
                         }
                         else{
                             const unvote ={...likes,"count": likes.count+1,
                             "usersUpvotes": [...likes.usersUpvotes,login._id]}
                             editLikes(unvote)
+                            unsubscribe("likes/edit")
+                            publish({"topic":"likes/edit","payload":JSON.stringify(unvote)})
+                            subscribe("likes/edit")
                             break;
                         }
                     }    
@@ -118,6 +222,9 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
                             const unvote ={...likes,"count": likes.count+1,
                             "usersDownvotes": [ ...likes.usersDownvotes.filter(user=>user !== login._id)]}
                             editLikes(unvote)
+                            unsubscribe("likes/edit")
+                            publish({"topic":"likes/edit","payload":JSON.stringify(unvote)})
+                            subscribe("likes/edit")
                             break;
                         }
                         if(likes.usersUpvotes.includes(login._id)){
@@ -125,12 +232,18 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
                             "usersUpvotes": [...likes.usersUpvotes.filter(user=>user !== login._id)],
                             "usersDownvotes": [...likes.usersDownvotes,login._id]}
                             editLikes(unvote)
+                            unsubscribe("likes/edit")
+                            publish({"topic":"likes/edit","payload":JSON.stringify(unvote)})
+                            subscribe("likes/edit")
                             break;
                         }
                         else{
                             const unvote ={...likes,"count": likes.count-1,
                             "usersDownvotes": [...likes.usersDownvotes,login._id]}
                             editLikes(unvote)
+                            unsubscribe("likes/edit")
+                            publish({"topic":"likes/edit","payload":JSON.stringify(unvote)})
+                            subscribe("likes/edit")
                             break;
                         }
                     }
@@ -159,12 +272,11 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
                     <div className="post-author">{author ? <Link to={`/profile/${author._id}`} 
                     style={{ textDecoration: 'none', color: "black" }}><div>{author.login}</div></Link> : <div>[removed]</div>}</div>
                 </div>
-            </div>: 
-            <div>Loading</div>}
+            </div>: <></>}
             {
                 post && post.author && login._id !== post.author && login.role === "admin" ? 
                 <div className="admin-panel">
-                    <div onClick={()=>handleDeletePost(post._id,likes._id)}><i className="fa fa-trash"></i></div>
+                    <div onClick={()=>handleDeletePost(post,likes)}><i className="fa fa-trash"></i></div>
                     <div onClick={()=>handleBan(post.author)}><i className="fa fa-ban"></i></div>
                 </div> : <></>
             }
@@ -172,20 +284,20 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
             {
             post && post.author && login._id === post.author? 
                 <div className="author-panel">
-                    <div onClick={()=>handleDeletePost(post._id,likes._id)}><i className="fa fa-trash"></i></div>
+                    <div onClick={()=>handleDeletePost(post,likes)}><i className="fa fa-trash"></i></div>
                     <div onClick={()=>{handleEditPost(post)}}><i className="fa fa-pencil"></i></div>
                     {editPostId === post._id ? <div onClick={()=>submitEditPost(post)}><i className="fa fa-check"></i> </div> : <></>}
                 </div> : <></>
             }
 
-            <div className="post-comment">
+            {post ? <div className="post-comment">
                 <input type="text" 
                 value={comment} 
                 onChange={(e) => setComment(e.target.value)} 
                 placeholder="Write a comment"></input>
                 <button onClick={()=>{ handleSubmit({"text":comment,"author":login._id,"post":post._id})}}>Send</button>
-            </div>
-            <div className="post-comments">
+            </div> : <></>}
+            {post ? <div className="post-comments">
                 <div>Comments</div>
                 {shownComments && shownComments.map(comment => (<div className="comment" key={comment._id}>
                     <div className="comment-edit">
@@ -228,7 +340,7 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
                     </div>
                     
                 </div>))}
-            </div>
+            </div> : <></>}
         </div>
     )
 };
@@ -256,8 +368,16 @@ const mapDispatchToProps = {
     deleteLikes,
     deleteUser,
     editComment,
-    editPost
-    
+    editPost,
+    mqttDelComm,
+    mqttAddComm,
+    mqttEditComm,
+    mqttDelPost,
+    mqttEditPost,
+    mqttDelLikes,
+    mqttEditLikes,
+    mqttDelUser, 
+    mqttEditUser
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(PostDetail));

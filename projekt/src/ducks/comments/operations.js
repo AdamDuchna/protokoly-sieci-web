@@ -97,3 +97,27 @@ export const addComment = (comment) => {
         ]
     })
  }
+
+ export const mqttDelComm = (comm) => {
+    const toReturn = {"comments":{undefined:{id:comm}}}
+    return{
+    type: types.COMMENTS_DELETE_SUCCESS,
+    payload: toReturn,
+    meta: {actionType: 'DEL_ONE'}
+}};
+
+export const mqttAddComm = (comm) => {
+    const {entities} = normalize(comm, commentSchema)
+    return{
+    type: types.COMMENTS_ADD_SUCCESS,
+    payload: entities,
+    meta: {actionType: 'ADD_ONE'}
+}};
+
+export const mqttEditComm = (comm) => {
+    const {entities} = normalize(comm, commentSchema)
+    return{
+    type: types.COMMENTS_EDIT_SUCCESS,
+    payload: entities,
+    meta: {actionType: 'UPDATE_ONE'}
+}};

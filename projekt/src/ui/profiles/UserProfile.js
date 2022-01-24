@@ -2,7 +2,7 @@ import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import {Link} from "react-router-dom";
 import { useEffect } from "react";
-import { getUsers,deleteUser,editUser } from "../../ducks/users/operations";
+import { getUsers,deleteUser,editUser,mqttEditUser,mqttDelUser } from "../../ducks/users/operations";
 import { getPosts,mqttEditPost,mqttDelPost,mqttAddPost } from "../../ducks/posts/operations";
 import { getPostsList } from "../../ducks/posts/selectors";
 import { getUsersList } from "../../ducks/users/selectors";
@@ -10,7 +10,7 @@ import "../../styling/profiles/UserProfile.css"
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import { useState } from "react";
 import {client,connectStatus,mqttConnect,mqttDisconnect,mqttUnSub,mqttSub,mqttPublish} from '../../mqtt/mqtt.js';
-const UserProfile = ({user,posts,getUsers,getPosts,login,deleteUser,editUser,mqttAddPost}) => {
+const UserProfile = ({user,posts,getUsers,getPosts,login,deleteUser,editUser,mqttAddPost,mqttEditUser,mqttDelUser}) => {
     
     const [connStatus,setConnStatus] = useState(connectStatus)
     /*MQTT*/
@@ -41,13 +41,13 @@ const UserProfile = ({user,posts,getUsers,getPosts,login,deleteUser,editUser,mqt
                         const postAdd = JSON.parse(message)
                         mqttAddPost(postAdd)
                         break;
-                    case "users/delete":
-                        const userDel = JSON.parse(message)
-                        mqttAddPost(userDel)
-                        break;
                     case "users/edit":
                         const userEdit = JSON.parse(message)
-                        mqttAddPost(userEdit)
+                        mqttEditUser(userEdit)
+                        break;
+                    case "users/delete":
+                        const userDel = message.toString()
+                        mqttDelUser(userDel)
                         break;
                     default:
                         break;
@@ -58,11 +58,14 @@ const UserProfile = ({user,posts,getUsers,getPosts,login,deleteUser,editUser,mqt
     
     const record = {topic:"default",qos: 0,};
     const connect = () => {mqttConnect(`ws://broker.emqx.io:8083/mqtt`)};
+    const publish = (payload) => {mqttPublish({...record,...payload})};
     const subscribe = (topic)=>{mqttSub({...record,"topic":topic})};
+    const unsubscribe = (topic)=>{mqttUnSub({...record,"topic":topic})};
+    const disconnect = () => {mqttDisconnect()};
 
-    useEffect(()=>{connect()},[])
+    useEffect(()=>{disconnect();connect()},[])
     useEffect(()=>{
-    if(connStatus=="Connected"){
+    if(connStatus==="Connected"){
     subscribe("posts/edit");
     subscribe("posts/delete");
     subscribe("posts/add");}
@@ -78,8 +81,8 @@ const UserProfile = ({user,posts,getUsers,getPosts,login,deleteUser,editUser,mqt
     const [surname,setSurname] = useState(undefined)
     useEffect(() => {
         if(calls<2){
-        if(posts.length === 0){getPosts()}
-        if(!user){getUsers()}
+        getPosts()
+        getUsers()
         setCalls(calls+1)
         }
     },[posts,user,getPosts,getUsers,calls])
@@ -87,6 +90,9 @@ const UserProfile = ({user,posts,getUsers,getPosts,login,deleteUser,editUser,mqt
     const handleBan = (id)=>{
         history.push("/")
         deleteUser(id)
+        unsubscribe("users/delete")
+        publish({"topic":"users/delete","payload":id})
+        subscribe("users/delete")
     }
     const handleSetRole = (role)=>{
         const newRole = {...user,"role":role}
@@ -96,6 +102,9 @@ const UserProfile = ({user,posts,getUsers,getPosts,login,deleteUser,editUser,mqt
         setEditing(false)
         const toSend={...user,"firstName":name,"lastName":surname}
         editUser(toSend)
+        unsubscribe("users/edit")
+        publish({"topic":"users/edit","payload":JSON.stringify(toSend)})
+        subscribe("users/edit")
     }
     const handleCheck=()=>{
         setName(user.firstName)
@@ -157,7 +166,9 @@ const mapDispatchToProps = {
     getPosts,
     deleteUser,
     editUser,
-    mqttAddPost
+    mqttAddPost,
+    mqttEditUser,
+    mqttDelUser
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(UserProfile));

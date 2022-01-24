@@ -1,5 +1,5 @@
 import { Formik,Field,Form } from "formik"
-import React, { useEffect} from "react"
+import React, { useEffect,useState} from "react"
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import "../../styling/login/UserLoginForm.css"
@@ -10,10 +10,13 @@ import {useHistory} from "react-router-dom";
 
 const UserRegisterForm= ({users,getUsers,addUser}) => {
     const history = useHistory()
-
+    const [calls,setCalls] = useState(0)
     useEffect(() => {
-        if(users.length === 0){getUsers()}
-    },[users,getUsers])
+        if(calls<2){
+            if(users.length === 0){getUsers()}
+            setCalls(calls+1)
+        }
+    },[users,getUsers,calls])
     const handleSubmit=(values)=>{
         history.push("/")
         const encrypted = sha1(values.password).toString()
@@ -23,6 +26,7 @@ const UserRegisterForm= ({users,getUsers,addUser}) => {
         <div className="user-loginForm">
             <Formik
                 initialValues={{
+                    _id: "u"+(parseInt(users.slice(-1)[0]._id.slice(1))+1).toString(),
                     firstName:"",
                     lastName:"",
                     login:"",

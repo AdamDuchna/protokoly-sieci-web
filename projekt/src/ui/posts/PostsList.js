@@ -4,7 +4,7 @@ import {Link} from "react-router-dom";
 import { getPosts,mqttAddPost,mqttDelPost,mqttEditPost } from "../../ducks/posts/operations";
 import { getPostsList } from "../../ducks/posts/selectors";
 import "../../styling/posts/PostLists.css";
-import {client,connectStatus,mqttConnect,mqttDisconnect,mqttUnSub,mqttSub,mqttPublish} from '../../mqtt/mqtt.js';
+import {client,connectStatus,mqttConnect,mqttDisconnect,mqttSub} from '../../mqtt/mqtt.js';
 
 const PostsList = ({posts,getPosts,login,mqttAddPost,mqttDelPost,mqttEditPost}) => {
     const [shownPosts,setShownPosts] = useState(undefined)
@@ -46,26 +46,28 @@ const PostsList = ({posts,getPosts,login,mqttAddPost,mqttDelPost,mqttEditPost}) 
         }
       }, [client]);
     
-    const record = {topic:"default",qos: 0,};
+    const record = {topic:"default",qos: 1,};
     const connect = () => {mqttConnect(`ws://broker.emqx.io:8083/mqtt`)};
     const subscribe = (topic)=>{mqttSub({...record,"topic":topic})};
+    const disconnect = () => {mqttDisconnect()};
 
-    useEffect(()=>{connect()},[])
-    useEffect(()=>{
-    if(connStatus=="Connected"){
-    subscribe("posts/edit");
-    subscribe("posts/delete");
-    subscribe("posts/add");}
-    },[connStatus])
 
     /*MQTT*/
     
     useEffect(() => {
         if(calls<2){
-        if(posts.length === 0)getPosts()
+        getPosts()
         setCalls(calls+1)
         }
     },[posts,getPosts,calls])
+
+    useEffect(()=>{disconnect();connect()},[calls])
+    useEffect(()=>{
+    if(connStatus==="Connected"){
+    subscribe("posts/edit");
+    subscribe("posts/delete");
+    subscribe("posts/add");}
+    },[connStatus])
 
     useEffect(() => {
         setShownPosts(posts)
@@ -81,7 +83,7 @@ const PostsList = ({posts,getPosts,login,mqttAddPost,mqttDelPost,mqttEditPost}) 
     return (
     <div className="post-menu">
         <input onChange={e=>handleSearch(e.target.value)} placeholder="Search for posts"></input>
-        <Link to={`/posts/add`} className="post-add" style={{ textDecoration: 'none', color: "black" }}>
+        <Link onClick={()=>disconnect()} to={`/posts/add`} className="post-add" style={{ textDecoration: 'none', color: "black" }}>
         <div key="add" className="post-add">Create post</div></Link>
         <div className="post-list">
             <div className="posts">Posts</div>

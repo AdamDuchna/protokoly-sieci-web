@@ -20,19 +20,19 @@ const Navbar = ({login,users,getUsers,setLoginAction}) => {
         }
     },[users,getUsers,calls])
     useEffect(()=>{
-        if('_id' in login){Cookies.set("sessionRoute",location.pathname , { expires: 1 })}
-    },[location,login])
-    useEffect(()=>{
-        if('_id' in login){Cookies.set("sessionUser",login._id , { expires: 1 })}
-    },[login])
-        
-    useEffect(()=>{
         if("_id" in login){
             const id = Cookies.get("sessionUser")
             const route = Cookies.get("sessionRoute")
             if(login._id === id){history.push(route)}
         }
     },[login,history])
+    useEffect(()=>{
+        if('_id' in login){Cookies.set("sessionRoute",location.pathname , { expires: 1 })}
+    },[location,login])
+    useEffect(()=>{
+        if('_id' in login){Cookies.set("sessionUser",login._id , { expires: 1 })}
+    },[login])
+
     useEffect(()=>{
         const isEmpty = Object.keys(login).length === 0;
         if(users && isEmpty){

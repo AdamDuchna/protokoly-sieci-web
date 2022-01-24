@@ -9,14 +9,14 @@ import { getUsersList } from "../../ducks/users/selectors";
 import { getUsers,deleteUser, mqttDelUser, mqttEditUser } from "../../ducks/users/operations";
 import { addComment,getComments,deleteComment,editComment,mqttDelComm,mqttAddComm,mqttEditComm } from "../../ducks/comments/operations";
 import { getCommentList } from "../../ducks/comments/selectors";
-import { addLikes,getLikes,editLikes,deleteLikes,mqttDelLikes,mqttEditLikes } from "../../ducks/likes/operations";
+import { addLikes,getLikes,editLikes,deleteLikes,mqttDelLikes,mqttEditLikes,mqttAddLikes } from "../../ducks/likes/operations";
 import { getLikesList } from "../../ducks/likes/selectors";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import {client,connectStatus,mqttConnect,mqttDisconnect,mqttUnSub,mqttSub,mqttPublish} from '../../mqtt/mqtt.js';
-import { v4 as uuidv4 } from 'uuid';
 
-const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,deleteLikes,mqttDelComm,mqttAddComm
-    ,mqttEditComm,mqttDelPost,mqttEditPost,mqttDelLikes,mqttEditLikes,mqttDelUser, mqttEditUser
+
+const PostDetail= ({post,users,likesList,getPosts,getUsers,login,addComment,deletePost,deleteLikes,mqttDelComm,mqttAddComm
+    ,mqttEditComm,mqttDelPost,mqttEditPost,mqttDelLikes,mqttEditLikes,mqttDelUser, mqttEditUser,mqttAddLikes
     ,getComments,comments,likes,addLikes,getLikes,editLikes,deleteComment,deleteUser,editComment,editPost } ,props) => {
 
         const [connStatus,setConnStatus] = useState(connectStatus)
@@ -61,8 +61,13 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
                             mqttDelLikes(likesDelete)
                             break;
                         case "likes/edit":
-                            const likesEdit = JSON.parse(message)
-                            mqttEditLikes(likesEdit)
+                            const likesEdited = JSON.parse(message)
+                            mqttEditLikes(likesEdited)
+                            break;
+                        case "likes/add":
+                            const likesAdd = JSON.parse(message)
+                            mqttAddLikes(likesAdd)
+                            break;
                         case "users/delete":
                             const userDel = message.toString()
                             mqttDelUser(userDel)
@@ -74,20 +79,24 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
             }
           }, [client]);
         
-        const record = {topic:"default",qos: 0,};
+        const record = {topic:"default",qos: 1,};
         const connect = () => {mqttConnect(`ws://broker.emqx.io:8083/mqtt`)};
+        const disconnect = () => {mqttDisconnect()};
         const publish = (payload) => {mqttPublish({...record,...payload})};
         const subscribe = (topic)=>{mqttSub({...record,"topic":topic})};
         const unsubscribe = (topic)=>{mqttUnSub({...record,"topic":topic})};
     
-        useEffect(()=>{connect()},[])
-        useEffect(()=>{if(connStatus=="Connected"){
+        useEffect(()=>{disconnect();connect()},[])
+        useEffect(()=>{if(connStatus==="Connected"){
         subscribe("comments/add");
         subscribe("comments/edit");
         subscribe("comments/delete")}
         subscribe("posts/edit");
         subscribe("posts/delete");
         subscribe("likes/edit");
+        subscribe("likes/add")
+        subscribe("likes/delete")
+        subscribe("users/delete")
         },[connStatus])
     
         /*MQTT*/
@@ -132,17 +141,20 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
     }
     const handleDeletePost = (post,likes) => {
         history.push("/")
+        deletePost(post._id)
         unsubscribe("posts/add")
         unsubscribe("likes/add")
-        if(post){deletePost(post._id); publish({"topic":"posts/delete","payload":post._id})}
-        if(likes){deleteLikes(likes._id); publish({"topic":"likes/delete","payload":likes._id})}
+        publish({"topic":"posts/delete","payload":post._id})
+        if(likes){
+            deleteLikes(likes._id)
+            publish({"topic":"likes/delete","payload":likes._id})}
         subscribe("posts/add")
         subscribe("likes/add")
     }
     const handleSubmit = (comm)=>{
-        addComment(comm)
+        addComment({...comm,"_id": post._id+"c"+(comments.length+1).toString()})
         unsubscribe("comments/add")
-        publish({"topic":"comments/add","payload":JSON.stringify({...comm,"creationDate": Date(),"_id": uuidv4()})})
+        publish({"topic":"comments/add","payload":JSON.stringify({...comm,"creationDate": Date(),"_id": post._id+"c"+(comments.length+1).toString()})})
         setComment("")
         subscribe("comments/add")
     }
@@ -180,8 +192,11 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
             switch(vote){
                 case "upvote":
                     if(!likes){
-                    const upvote={"count": 1,"post": post._id,"usersUpvotes": [login._id],"usersDownvotes": []}
+                    const upvote={"count": 1,"post": post._id,"usersUpvotes": [login._id],"usersDownvotes": [],"_id": "l"+(parseInt(likesList.slice(-1)[0]._id.slice(1))+1).toString(),}
                     addLikes(upvote)
+                    unsubscribe("likes/add")
+                    publish({"topic":"likes/add","payload":JSON.stringify(upvote)})
+                    subscribe("likes/add")
                     }
                     else{
                         if(likes.usersUpvotes.includes(login._id)){
@@ -214,8 +229,11 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
                     break;        
                 case "downvote":
                     if(!likes){
-                    const downvote={"count": -1,"post": post._id,"usersUpvotes": [],"usersDownvotes": [login._id]}
+                    const downvote={"count": -1,"post": post._id,"usersUpvotes": [],"usersDownvotes": [login._id],"_id": "l"+(parseInt(likesList.slice(-1)[0]._id.slice(1))+1).toString(),}
                     addLikes(downvote)
+                    unsubscribe("likes/add")
+                    publish({"topic":"likes/add","payload":JSON.stringify(downvote)})
+                    subscribe("likes/add")
                     }
                     else{
                         if(likes.usersDownvotes.includes(login._id)){
@@ -295,7 +313,7 @@ const PostDetail= ({post,users,getPosts,getUsers,login,addComment,deletePost,del
                 value={comment} 
                 onChange={(e) => setComment(e.target.value)} 
                 placeholder="Write a comment"></input>
-                <button onClick={()=>{ handleSubmit({"text":comment,"author":login._id,"post":post._id})}}>Send</button>
+                <button onClick={()=>{ handleSubmit({"text":comment,"author":login._id,"post":post._id,_id: "c"+(comments.length+1).toString()})}}>Send</button>
             </div> : <></>}
             {post ? <div className="post-comments">
                 <div>Comments</div>
@@ -350,7 +368,8 @@ const mapStateToProps = (state,ownProps) => {
         users: getUsersList(state),
         login: state.login,
         comments: getCommentList(state).filter(comment => comment.post === ownProps.match.params.id),
-        likes: getLikesList(state).find(like => like.post === ownProps.match.params.id)
+        likes: getLikesList(state).find(like => like.post === ownProps.match.params.id),
+        likesList: getLikesList(state)
 
     };
 }
@@ -377,7 +396,8 @@ const mapDispatchToProps = {
     mqttDelLikes,
     mqttEditLikes,
     mqttDelUser, 
-    mqttEditUser
+    mqttEditUser,
+    mqttAddLikes
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(PostDetail));

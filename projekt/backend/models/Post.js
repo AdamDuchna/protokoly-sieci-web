@@ -1,6 +1,10 @@
 const { Schema, model } = require('mongoose');
 
 const postSchema = new Schema({
+    _id: {
+        type: String,
+        required: true 
+    },
     title:{
         type: String,
         required: true
@@ -10,7 +14,7 @@ const postSchema = new Schema({
         required: true
     },
     creationDate: Date,
-    author: {type: Schema.Types.ObjectId, ref: 'User'}
+    author: {type: String, ref: 'User'}
 
 });
 

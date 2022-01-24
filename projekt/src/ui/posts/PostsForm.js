@@ -4,16 +4,17 @@ import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import "../../styling/posts/PostCreationForm.css"
 import {useHistory} from "react-router-dom";
-import { addPost,mqttAddPost } from "../../ducks/posts/operations";
-import {client,connectStatus,mqttConnect,mqttDisconnect,mqttUnSub,mqttSub,mqttPublish} from '../../mqtt/mqtt.js';
-import { v4 as uuidv4 } from 'uuid';
+import { addPost,getPosts } from "../../ducks/posts/operations";
+import {mqttConnect,mqttDisconnect,mqttPublish} from '../../mqtt/mqtt.js';
+import { getPostsList } from "../../ducks/posts/selectors";
 
-const PostCreationForm= ({login,addPost}) => {    
-    const record = {topic:"default",qos: 0,};
+const PostCreationForm= ({login,posts,addPost,getPosts}) => {    
+    const record = {topic:"default",qos: 1,};
     const connect = () => {mqttConnect(`ws://broker.emqx.io:8083/mqtt`)};
     const publish = (payload) => {mqttPublish({...record,...payload})};
+    const disconnect = () => {mqttDisconnect()};
 
-    useEffect(()=>{connect()},[])
+    useEffect(()=>{disconnect();connect()},[])
 
     /*MQTT*/
 
@@ -22,17 +23,24 @@ const PostCreationForm= ({login,addPost}) => {
     const handleSubmit=(values)=>{
         if('_id' in login){
             addPost(values)
-            publish({"topic":"posts/add","payload":JSON.stringify({...values,"creationDate": Date(),"_id": uuidv4()})})
-            history.push('/')
-
-             
+            publish({"topic":"posts/add","payload":JSON.stringify({...values,"creationDate": Date(),"_id": "p"+(parseInt(posts.slice(-1)[0]._id.slice(1))+1).toString(),})})
+            history.push('/')      
         }
         else{setPostStatus("Login to post")}
     }
+    const [calls,setCalls] = useState(0)
+
+    useEffect(() => {
+        if(calls<2){
+        if(posts.length === 0)getPosts()
+        setCalls(calls+1)
+        }
+    },[posts,getPosts,calls])
     return (
         <div className="post-creationForm">
             <Formik
                 initialValues={{
+                    _id: "p"+(parseInt(posts.slice(-1)[0]._id.slice(1))+1).toString(),
                     title:"",
                     text:"",
                     responses: 0 ,
@@ -58,10 +66,12 @@ const PostCreationForm= ({login,addPost}) => {
 }
 const mapStateToProps = (state) => {
     return { 
-        login: state.login
+        posts: getPostsList(state),
+        login: state.login,
     }
 }
 const mapDispatchToProps ={
-    addPost
+    addPost,
+    getPosts
 };
 export default withRouter(connect(mapStateToProps,mapDispatchToProps)(PostCreationForm));

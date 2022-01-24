@@ -117,3 +117,11 @@ export const mqttEditLikes = (likes) => {
     payload: entities,
     meta: {actionType: 'UPDATE_ONE'}
 }};
+
+export const mqttAddLikes = (likes) => {
+    const {entities} = normalize(likes, likeSchema)
+    return{
+    type: types.LIKES_ADD_SUCCESS,
+    payload: entities,
+    meta: {actionType: 'ADD_ONE'}
+}};
